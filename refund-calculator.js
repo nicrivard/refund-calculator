@@ -1,53 +1,61 @@
-function newOrder(a, b, c, d){
-  orderDetails = {
-    orderDate: new Date(a), // from Zuora e.g. "2020-1-1"
-    effectiveDate: new Date(b), // from Zuora e.g. "2020-12-31"
-    orderPrice: c, // from Zuora e.g. $100
-    orderDiscount: d, // from Zuora e.g. $20
+function newOrder(a, b, c, d, e){
+  orderDetails = {                    
+    orderNum: a,                     // order # from Zuora e.g. 123456
+    orderDate: new Date(b),          // order date from Zuora e.g. "2020-1-1"
+    effectiveDate: new Date(c),      // effective date from Zuora e.g. "2020-12-31"
+    pricePaid: d,                    // price paid from Zuora e.g. $100
+    discountReceived: e,             // discount received from Zuora e.g. $20
   }
 };
   
 function refund(type, value) {
-  date = orderDetails.effectiveDate;
+  date = new Date(orderDetails.effectiveDate);
   let refundPercent
     if (type == "percent") {
       refundPercent = value / 100;
     } else { 
-      refundPercent = value / (orderDetails.orderPrice + orderDetails.orderDiscount);
+      refundPercent = value / orderDetails.pricePaid;
     };
     if (refundPercent > 1) 
-      return alert("You can't refund an amount greater than the original order price.")
+      return alert("You can't refund an amount greater than the original price.")
   duration = (orderDetails.effectiveDate.getTime() - orderDetails.orderDate.getTime()) / (1000 * 3600 * 24);
   daysMinus = duration * refundPercent;
   date.setDate(date.getDate() - daysMinus);
-  return newOrderDetails = {
-      effectiveDate: date,
-      effectivePrice: orderDetails.orderPrice * (1 - refundPercent),
-      effectiveDiscount: orderDetails.orderDiscount * (1 - refundPercent),
+  return orderDetailsNew = {
+      cancellationEffectiveDate: date,
+      newPrice: orderDetails.pricePaid * (1 - refundPercent),
+      newDiscount: orderDetails.discountReceived * (1 - refundPercent),
+      refundAmount: orderDetails.pricePaid * refundPercent,
   }
 };
 
 /* tests */
 
-newOrder("2020-1-1", "2020-12-31", 100, 20);
+newOrder(123456, "2020-1-1", "2020-12-31", 100, 20);
+// order # = 123456
+// order date = 2020-1-1
+// cancellation effective date = 2020-12-31
+// price paid = 100
+// discount received = 20
+
 refund("percent", 50); 
-// effectiveDate = "2020-07-02"
-// effectivePrice = $50
-// effectiveDiscount = $10
+// cancellation effective date = "2020-07-02"
+// new price = $50
+// new discount = $10
+// refund amount = $50
 
-newOrder("2020-1-1", "2020-12-31", 100, 20);
 refund("percent", 10); 
-// effectiveDate = "2020-11-25"
-// effectivePrice = $90
-// effectiveDiscount = $18
+// cancellation effective date = "2020-11-25"
+// new price = $90
+// new discount = $18
+// refund amount = $10
 
-newOrder("2020-1-1", "2020-12-31", 100, 20);
 refund("dollar", 60); 
-// effectiveDate = "2020-07-02"
-// effectivePrice = $50
-// effectiveDiscount = $10
+// cancellation effective date = "2020-05-26"
+// new price = $40
+// new discount = $8
+// refund amount = $60
 
-newOrder("2020-1-1", "2020-12-31", 100, 20);
 refund("dollar", 130); 
 // alert "You can't refund an amount greater than the original order price.
 // return
